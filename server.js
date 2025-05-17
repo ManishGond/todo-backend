@@ -5,7 +5,12 @@ require("dotenv").config();
 const CryptoJS = require("crypto-js");
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+  })
+);
+
 app.use(express.json());
 
 // Load secret key from .env
