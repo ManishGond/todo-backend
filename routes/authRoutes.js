@@ -6,20 +6,41 @@ const User = require("../models/User");
 const router = express.Router();
 
 // Signup
+// /routes/authRoutes.js
 router.post("/signup", async (req, res) => {
   const { email, password } = req.body;
+
+  // Validate input
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password are required" });
+  }
+
   try {
     const existingUser = await User.findOne({ email });
-    if (existingUser)
-      return res.status(400).json({ error: "User already exists" });
+    if (existingUser) {
+      return res.status(409).json({ error: "Email already in use" }); // 409 Conflict
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ email, password: hashedPassword });
+    const user = await User.create({
+      email,
+      password: hashedPassword,
+    });
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
-    res.json({ token });
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1h", // Token expiration
+    });
+
+    res.status(201).json({
+      token,
+      userId: user._id,
+    });
   } catch (err) {
-    res.status(500).json({ error: "Signup failed" });
+    console.error("Signup error:", err); // Log the actual error
+    res.status(500).json({
+      error: "Internal server error",
+      details: process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
   }
 });
 
