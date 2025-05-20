@@ -5,12 +5,6 @@ const TaskSchema = new mongoose.Schema({
   title: String,
   dueDate: Date,
   isCompleted: { type: Boolean, default: false },
-  isRecurring: { type: Boolean, default: false },
-  recurrencePattern: {
-    type: String,
-    enum: ["daily", "weekly", "monthly"],
-    default: null,
-  },
   lastTriggeredDate: Date,
 });
 

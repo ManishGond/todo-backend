@@ -13,10 +13,8 @@ router.get("/", verifyToken, async (req, res) => {
     const decryptedTasks = tasks.map((task) => ({
       _id: task._id,
       title: decrypt(task.title),
-      completed: task.completed,
+      isCompleted: task.isCompleted,
       dueDate: task.dueDate,
-      isRecurring: task.isRecurring,
-      recurrencePattern: task.recurrencePattern,
       lastTriggeredDate: task.lastTriggeredDate,
     }));
     res.json(decryptedTasks);
@@ -39,10 +37,8 @@ router.get("/today", verifyToken, async (req, res) => {
     const decryptedTasks = tasks.map((task) => ({
       _id: task._id,
       title: decrypt(task.title),
-      completed: task.completed,
+      isCompleted: task.isCompleted,
       dueDate: task.dueDate,
-      isRecurring: task.isRecurring,
-      recurrencePattern: task.recurrencePattern,
     }));
 
     res.json(decryptedTasks);
@@ -56,21 +52,18 @@ router.post("/", verifyToken, async (req, res) => {
   try {
     const task = await Task.create({
       title: encrypt(req.body.title),
-      completed: req.body.completed ?? false,
+      isCompleted: req.body.isCompleted ?? false,
       userId: req.userId,
       dueDate: req.body.dueDate,
-      isRecurring: req.body.isRecurring ?? false,
-      recurrencePattern: req.body.recurrencePattern ?? null,
       lastTriggeredDate: req.body.lastTriggeredDate ?? null,
     });
 
     res.json({
       _id: task._id,
       title: req.body.title,
-      completed: task.completed,
+      isCompleted: task.isCompleted,
       dueDate: task.dueDate,
-      isRecurring: task.isRecurring,
-      recurrencePattern: task.recurrencePattern,
+      lastTriggeredDate: task.lastTriggeredDate,
     });
   } catch {
     res.status(500).json({ error: "Failed to create task" });
@@ -82,12 +75,9 @@ router.put("/:id", verifyToken, async (req, res) => {
   try {
     const update = {};
     if (req.body.title !== undefined) update.title = encrypt(req.body.title);
-    if (req.body.completed !== undefined) update.completed = req.body.completed;
+    if (req.body.isCompleted !== undefined)
+      update.isCompleted = req.body.isCompleted;
     if (req.body.dueDate !== undefined) update.dueDate = req.body.dueDate;
-    if (req.body.isRecurring !== undefined)
-      update.isRecurring = req.body.isRecurring;
-    if (req.body.recurrencePattern !== undefined)
-      update.recurrencePattern = req.body.recurrencePattern;
     if (req.body.lastTriggeredDate !== undefined)
       update.lastTriggeredDate = req.body.lastTriggeredDate;
 
@@ -96,15 +86,14 @@ router.put("/:id", verifyToken, async (req, res) => {
       update,
       { new: true }
     );
+
     if (!task) return res.status(404).json({ error: "Task not found" });
 
     res.json({
       _id: task._id,
       title: decrypt(task.title),
-      completed: task.completed,
+      isCompleted: task.isCompleted,
       dueDate: task.dueDate,
-      isRecurring: task.isRecurring,
-      recurrencePattern: task.recurrencePattern,
       lastTriggeredDate: task.lastTriggeredDate,
     });
   } catch {
